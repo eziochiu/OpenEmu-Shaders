@@ -1096,7 +1096,7 @@ static NSRect FitAspectRectIntoRect(CGSize aspectSize, CGSize size)
             _pass[i].frameCountMod = (uint32_t)pass.frameCountMod;
 
 #ifdef DEBUG
-            BOOL save_msl = NO;
+            BOOL save_msl = YES;
 #else
             BOOL save_msl = NO;
 #endif
@@ -1208,24 +1208,18 @@ static NSRect FitAspectRectIntoRect(CGSize aspectSize, CGSize size)
             }
             @finally {
                 if (save_msl) {
-                    NSString *basePath = [pass.url.absoluteString stringByDeletingPathExtension];
+                    NSString *basePath = [pass.url.path stringByDeletingLastPathComponent];
                     
                     os_log_debug(OE_LOG_DEFAULT, "saving metal shader files to %{public}@", basePath);
                     
                     NSError *err = nil;
-                    [vs_src writeToFile:[basePath stringByAppendingPathExtension:@"vs.metal"]
-                             atomically:NO
-                               encoding:NSStringEncodingConversionAllowLossy
-                                  error:&err];
+                    [[vs_src dataUsingEncoding:NSUTF8StringEncoding] writeToFile:[basePath stringByAppendingPathComponent:@"vs.metal"] options:NSDataWritingAtomic error:&err];
                     if (err != nil) {
                         os_log_error(OE_LOG_DEFAULT, "unable to save vertex shader source for pass %d: %{public}@", i, err.localizedDescription);
                     }
                     
                     err = nil;
-                    [fs_src writeToFile:[basePath stringByAppendingPathExtension:@"fs.metal"]
-                             atomically:NO
-                               encoding:NSStringEncodingConversionAllowLossy
-                                  error:&err];
+                    [[fs_src dataUsingEncoding:NSUTF8StringEncoding] writeToFile:[basePath stringByAppendingPathComponent:@"fs.metal"] options:NSDataWritingAtomic error:&err];
                     if (err != nil) {
                         os_log_error(OE_LOG_DEFAULT, "unable to save fragment shader source for pass %d: %{public}@", i, err.localizedDescription);
                     }
